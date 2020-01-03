@@ -18,6 +18,7 @@
   "homepage": "https://github.com/Aslangh67/Developer-Profile-Generator#readme",
   "dependencies": {
     "axios": "^0.19.0",
-    "inquirer": "^7.0.1"
+    "inquirer": "^7.0.1",
+    "util": "^0.12.1"
   }
 }
