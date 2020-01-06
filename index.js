@@ -17,12 +17,22 @@ function userInput() {
     },
     {
       type: "list",
-      message: "What color would you like as your PDF file background?",
+      message: "What color would you like for text??",
       name: "color",
       choices: [
-        "alert",
-        "info",
-        "secondary"
+        "black",
+        "purple",
+        "green"
+      ]
+    },
+    {
+      type: "list",
+      message: "What color would you like for shadows??",
+      name: "shadow",
+      choices: [
+        "black",
+        "blue",
+        "grey"
       ]
     },
   ])
@@ -39,15 +49,16 @@ function generateHTML(answers, userData, gsData) {
         <title>Document</title>
         <style>
         .jumbotron {
-            color: black;
+            color: ${answers.color};
             background: white;
             text-align: center;
         }
         img{
-            box-shadow:0px 0px 50px 30px black;
+            box-shadow:0px 0px 50px 30px ${answers.shadow};
             border-radius: 50%;
         }
         h1, p, h2, h3{
+          color: ${answers.color};
             text-shadow:2px 2px 5px black;
         }
     </style>
@@ -58,7 +69,7 @@ function generateHTML(answers, userData, gsData) {
         <img src="${userData.githubPic}" class="rounded-circle mx-auto d-block mb-5" alt="${userData.githubName}s's picture">
             <h1 class="display-4">${userData.githubName}</h1>
             <p class="lead">I'm from ${userData.githubLocation}.</p>
-            <h3 class="lead">${userData.githubBio}.</h3>
+            <h3 class="lead">${userData.githubBio}</h3>
             <h2 class="lead">Number of github repos: ${userData.githubRepos}</h2>
             <h2 class="lead">Number of github followers: ${userData.githubFollowers}</h2>
             <h2 class="lead">Number of github following: ${gsData.following}</h2>
