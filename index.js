@@ -8,30 +8,11 @@ const writeFileAsync = util.promisify(fs.writeFile);
 let github;
 function userInput() {
   return inquirer.prompt([
-    {
-      type: "input",
-      message: "What is your full name?",
-      name: "name"
-    },
+  
     {
       type: "input",
       message: "What is your Github username?",
       name: "username"
-    },
-    {
-      type: "input",
-      message: "What is your blog url?",
-      name: "blog"
-    },
-    {
-      type: "input",
-      message: "In what city do you live?",
-      name: "location"
-    },
-    {
-      type: "input",
-      message: "Please provide a short bio.",
-      name: "bio"
     },
     {
       type: "list",
@@ -74,9 +55,9 @@ function generateHTML(answers, userData,github) {
         
         <div class="jumbotron bg-${answers.color}">
         <img src="${userData.githubPic}" class="rounded-circle mx-auto d-block mb-5" alt="${answers.name}'s picture">
-            <h1 class="display-4">${answers.name}</h1>
-            <p class="lead">I'm from ${answers.location}.</p>
-            <h3 class="lead">${answers.bio}.</h3>
+            <h1 class="display-4">${userData.githubName}</h1>
+            <p class="lead">I'm from ${userData.githubLocation}.</p>
+            <h3 class="lead">${userData.githubBio}.</h3>
             <h2 class="lead">Number of github repos: ${userData.githubRepos}</h2>
             <h2 class="lead">Number of github followers: ${userData.githubFollowers}</h2>
             <h2 class="lead">Number of github following: {github.following}</h2>
@@ -86,6 +67,7 @@ function generateHTML(answers, userData,github) {
             <p>Here are the ways you can reach me.</p>
             <a class="btn btn-primary btn-lg" href="https://www.google.com/maps/place/${userData.githubLocation}/" role="button" target="blank">Location</a>
             <a class="btn btn-primary btn-lg" href="${userData.githubURL}" role="button" target="blank">github</a>
+            <a class="btn btn-primary btn-lg" href="${userData.githubBlog}" role="button" target="blank">Blog</a>
           </div>
     
     
@@ -127,6 +109,9 @@ function generateHTML(answers, userData,github) {
             githubRepos: res.data.public_repos,
             githubFollowers: res.data.followers,
             githubLocation: res.data.location,
+            githubBlog: res.data.blog,
+            githubName: res.data.name,
+            githubBio: res.data.bio
       }
       
       
