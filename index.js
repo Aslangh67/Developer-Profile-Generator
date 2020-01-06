@@ -65,6 +65,8 @@ function generateHTML(answers, userData) {
             <h3 class="lead">${answers.bio}.</h3>
             <h2 class="lead">Number of github repos: ${userData.githubRepos}</h2>
             <h2 class="lead">Number of github followers: ${userData.githubFollowers}</h2>
+            <h2 class="lead">Number of github following: {data.following}</h2>
+            <h2 class="lead">Number of github stars: {data.stars}</h2>
             
             <hr class="my-4">
             <p>Here are the ways you can reach me.</p>
