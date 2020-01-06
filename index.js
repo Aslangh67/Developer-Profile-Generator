@@ -5,10 +5,11 @@ const fs = require('fs');
 const pdf = require('html-pdf');
 var gs = require('github-scraper');
 const writeFileAsync = util.promisify(fs.writeFile);
-let github;
+const gsPromise = util.promisify(gs);
+var github;
 function userInput() {
   return inquirer.prompt([
-  
+
     {
       type: "input",
       message: "What is your Github username?",
@@ -26,7 +27,7 @@ function userInput() {
     },
   ])
 }
-function generateHTML(answers, userData,github) {
+function generateHTML(answers, userData, gsData) {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -53,15 +54,15 @@ function generateHTML(answers, userData,github) {
     </head>
     <body>
         
-        <div class="jumbotron bg-${answers.color}">
-        <img src="${userData.githubPic}" class="rounded-circle mx-auto d-block mb-5" alt="${answers.name}'s picture">
+        <div class="jumbotron">
+        <img src="${userData.githubPic}" class="rounded-circle mx-auto d-block mb-5" alt="${userData.githubName}s's picture">
             <h1 class="display-4">${userData.githubName}</h1>
             <p class="lead">I'm from ${userData.githubLocation}.</p>
             <h3 class="lead">${userData.githubBio}.</h3>
             <h2 class="lead">Number of github repos: ${userData.githubRepos}</h2>
             <h2 class="lead">Number of github followers: ${userData.githubFollowers}</h2>
-            <h2 class="lead">Number of github following: {github.following}</h2>
-            <h2 class="lead">Number of github stars: {github.stars}</h2>
+            <h2 class="lead">Number of github following: ${gsData.following}</h2>
+            <h2 class="lead">Number of github stars: ${gsData.stars}</h2>
             
             <hr class="my-4">
             <p>Here are the ways you can reach me.</p>
@@ -80,47 +81,42 @@ function generateHTML(answers, userData,github) {
     </body>
     </html>`;
 }
- function githubAxiosProfile(answers) {
-    const queryUrl = `https://api.github.com/users/${answers.username}`;
-    return axios.get(queryUrl)
-  }
-  async function pdfGen(html) {
- 
-    const options = { format: 'Letter', orientation: "portrait",};
-    pdf.create(html, options).toFile('./profile.pdf', function(err, res) {
-      if (err) return console.log(err);
-      console.log(res); 
-    });
-  }
-  async function main(){
-    try{
-      const answers=await userInput()
-      const res= await githubAxiosProfile(answers)
-      var url = answers.username 
-      gs(url, function(err, data) {
-        github={
-       following: data.following,
-        stars:data.stars 
-      }
-      })
-      const userData = {
-            githubURL: res.data.html_url,
-            githubPic: res.data.avatar_url,
-            githubRepos: res.data.public_repos,
-            githubFollowers: res.data.followers,
-            githubLocation: res.data.location,
-            githubBlog: res.data.blog,
-            githubName: res.data.name,
-            githubBio: res.data.bio
-      }
-      
-      
-      const html= generateHTML(answers, userData, github)
-      writeFileAsync("index.html", html)
-     pdfGen(html)
+function githubAxiosProfile(answers) {
+  const queryUrl = `https://api.github.com/users/${answers.username}`;
+  return axios.get(queryUrl)
+}
+async function pdfGen(html) {
+
+  const options = { format: 'Letter', orientation: "portrait", };
+  pdf.create(html, options).toFile('./profile.pdf', function (err, res) {
+    if (err) return console.log(err);
+    console.log(res);
+  });
+}
+async function main() {
+  try {
+    const answers = await userInput()
+    const res = await githubAxiosProfile(answers)
+    var url = answers.username
+    const gsData= await gsPromise(url)
+    const userData = {
+      githubURL: res.data.html_url,
+      githubPic: res.data.avatar_url,
+      githubRepos: res.data.public_repos,
+      githubFollowers: res.data.followers,
+      githubLocation: res.data.location,
+      githubBlog: res.data.blog,
+      githubName: res.data.name,
+      githubBio: res.data.bio
     }
-    catch(err){
-      console.log(err);
-    }
+
+
+    const html = generateHTML(answers, userData, gsData)
+    writeFileAsync("index.html", html)
+    pdfGen(html)
   }
+  catch (err) {
+    console.log(err);
+  }
+}
 main()
