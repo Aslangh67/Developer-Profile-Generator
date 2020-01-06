@@ -5,6 +5,7 @@ const fs = require('fs');
 const pdf = require('html-pdf');
 var gs = require('github-scraper');
 const writeFileAsync = util.promisify(fs.writeFile);
+let github;
 function userInput() {
   return inquirer.prompt([
     {
@@ -37,15 +38,14 @@ function userInput() {
       message: "What color would you like as your PDF file background?",
       name: "color",
       choices: [
-        "Red",
-        "Blue",
-        "Grey"
+        "alert",
+        "info",
+        "secondary"
       ]
     },
   ])
-
 }
-function generateHTML(answers, userData) {
+function generateHTML(answers, userData,github) {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -55,22 +55,36 @@ function generateHTML(answers, userData) {
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <title>Document</title>
+        <style>
+        .jumbotron {
+            color: black;
+            background: white;
+            text-align: center;
+        }
+        img{
+            box-shadow:0px 0px 50px 30px black;
+            border-radius: 50%;
+        }
+        h1, p, h2, h3{
+            text-shadow:2px 2px 5px black;
+        }
+    </style>
     </head>
     <body>
         
-        <div class="jumbotron">
-        <img src="${userData.githubPic}" class="rounded mx-auto d-block" alt="${answers.name}'s picture">
+        <div class="jumbotron bg-${answers.color}">
+        <img src="${userData.githubPic}" class="rounded-circle mx-auto d-block mb-5" alt="${answers.name}'s picture">
             <h1 class="display-4">${answers.name}</h1>
             <p class="lead">I'm from ${answers.location}.</p>
             <h3 class="lead">${answers.bio}.</h3>
             <h2 class="lead">Number of github repos: ${userData.githubRepos}</h2>
             <h2 class="lead">Number of github followers: ${userData.githubFollowers}</h2>
-            <h2 class="lead">Number of github following: {data.following}</h2>
-            <h2 class="lead">Number of github stars: {data.stars}</h2>
+            <h2 class="lead">Number of github following: {github.following}</h2>
+            <h2 class="lead">Number of github stars: {github.stars}</h2>
             
             <hr class="my-4">
             <p>Here are the ways you can reach me.</p>
-            <a class="btn btn-primary btn-lg" href="LINKEDIN" role="button" target="blank">Linkedin</a>
+            <a class="btn btn-primary btn-lg" href="https://www.google.com/maps/place/${userData.githubLocation}/" role="button" target="blank">Location</a>
             <a class="btn btn-primary btn-lg" href="${userData.githubURL}" role="button" target="blank">github</a>
           </div>
     
@@ -90,7 +104,7 @@ function generateHTML(answers, userData) {
   }
   async function pdfGen(html) {
  
-    const options = { format: 'Letter', orientation: "portrait", zoomFactor: ".8",};
+    const options = { format: 'Letter', orientation: "portrait",};
     pdf.create(html, options).toFile('./profile.pdf', function(err, res) {
       if (err) return console.log(err);
       console.log(res); 
@@ -102,16 +116,21 @@ function generateHTML(answers, userData) {
       const res= await githubAxiosProfile(answers)
       var url = answers.username 
       gs(url, function(err, data) {
-        console.log(data.following); 
-        console.log(data.stars); 
+        github={
+       following: data.following,
+        stars:data.stars 
+      }
       })
       const userData = {
             githubURL: res.data.html_url,
             githubPic: res.data.avatar_url,
             githubRepos: res.data.public_repos,
-            githubFollowers: res.data.followers
+            githubFollowers: res.data.followers,
+            githubLocation: res.data.location,
       }
-      const html= generateHTML(answers, userData)
+      
+      
+      const html= generateHTML(answers, userData, github)
       writeFileAsync("index.html", html)
      pdfGen(html)
     }
